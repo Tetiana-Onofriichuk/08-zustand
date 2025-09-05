@@ -20,7 +20,6 @@ export default function Header() {
           <li>
             <TagsMenu />
           </li>{" "}
-          {/* ← замість старого посилання Notes */}
         </ul>
       </nav>
     </header>

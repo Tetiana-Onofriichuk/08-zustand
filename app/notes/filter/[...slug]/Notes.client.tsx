@@ -14,33 +14,17 @@ import Modal from "@/components/Modal/Modal";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteForm from "@/components/NoteForm/NoteForm";
 import { type CategoryNoAll } from "@/types/note";
+import Link from "next/link";
 
 type NotesClientProps = {
-  category?: CategoryNoAll;
+  tag?: CategoryNoAll;
 };
+const PER_PAGE = 8;
 
-export default function NotesClient({ category }: NotesClientProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function NotesClient({ tag }: NotesClientProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
-
-  const perPage = 8;
-  const queryClient = useQueryClient();
-
-  const { data, isLoading, isError, isFetching } = useQuery({
-    queryKey: [
-      "notes",
-      { page: currentPage, perPage, search, tag: category ?? null },
-    ],
-    queryFn: () =>
-      fetchNotes(currentPage, perPage, search || undefined, category),
-    placeholderData: keepPreviousData,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    staleTime: 30_000,
-  });
 
   useEffect(() => {
     const t = setTimeout(() => {
@@ -48,24 +32,43 @@ export default function NotesClient({ category }: NotesClientProps) {
       setCurrentPage(1);
     }, 500);
     return () => clearTimeout(t);
-  }, [searchInput, category]);
+  }, [searchInput, tag]);
 
-  const hasResults = !!data?.notes?.length;
+  const { data, isLoading, isError, isFetching } = useQuery({
+    queryKey: [
+      "notes",
+      { page: currentPage, perPage: PER_PAGE, search, tag: tag ?? null },
+    ],
+    queryFn: () => fetchNotes(currentPage, PER_PAGE, search || undefined, tag),
+    placeholderData: keepPreviousData,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 30_000,
+  });
+
+  const notes = data?.notes ?? [];
+  const hasResults = notes.length > 0;
   const totalPages = data?.totalPages ?? 1;
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox onSearch={setSearchInput} />
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+
+        <Link
+          href="/notes/action/create"
+          className={css.button}
+          aria-label="Create a new note"
+        >
           Create note +
-        </button>
+        </Link>
       </header>
 
       <main className="notes-list">
         {isLoading && <p>Loading…</p>}
         {isError && <p>Something went wrong.</p>}
-        {data && !isLoading && <NoteList notes={data.notes ?? []} />}
+        {!isLoading && <NoteList notes={notes} />}
 
         {hasResults && totalPages > 1 && (
           <Pagination
@@ -76,12 +79,6 @@ export default function NotesClient({ category }: NotesClientProps) {
         )}
 
         {isFetching && !isLoading && <p>Updating…</p>}
-
-        {isModalOpen && (
-          <Modal onClose={() => setIsModalOpen(false)}>
-            <NoteForm onCancel={() => setIsModalOpen(false)} />
-          </Modal>
-        )}
       </main>
     </div>
   );

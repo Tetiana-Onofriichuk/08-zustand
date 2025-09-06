@@ -5,6 +5,9 @@
   display: flex;
   flex-direction: column;
 }
+:root {
+  font-family: var(--font-roboto), sans-serif;
+}
 
 @media (prefers-color-scheme: dark) {
   :root {

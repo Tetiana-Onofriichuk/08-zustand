@@ -7,6 +7,44 @@ import NotesClient from "./Notes.client";
 import { fetchNotes } from "@/lib/api";
 import { CATEGORIES, type Category, type CategoryNoAll } from "@/types/note";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug?: string[] };
+}): Promise<Metadata> {
+  const slug = params.slug?.[0];
+
+  if (!slug || !CATEGORIES.includes(slug as Category)) {
+    return {
+      title: "NoteHub - Not Found",
+      description: "The requested category does not exist.",
+    };
+  }
+
+  const tag = slug as Category;
+
+  return {
+    title: `NoteHub - ${tag}`,
+    description: `Browse notes filtered by category: ${tag}.`,
+    openGraph: {
+      title: `NoteHub - ${tag}`,
+      description: `Browse notes filtered by category: ${tag}.`,
+      url: `https://08-zustand-phi-three.vercel.app/notes/${tag}`,
+      siteName: "NoteHub",
+      images: [
+        {
+          url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+          width: 1200,
+          height: 630,
+          alt: "Notehub",
+        },
+      ],
+      type: "website",
+    },
+  };
+}
 
 export const dynamicParams = false;
 export function generateStaticParams() {
@@ -34,7 +72,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <HydrationBoundary state={dehydrate(qc)}>
-      <NotesClient category={category} />
+      <NotesClient tag={category} />
     </HydrationBoundary>
   );
 }

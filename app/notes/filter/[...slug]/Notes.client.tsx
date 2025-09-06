@@ -1,24 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import css from "./Notesclient.module.css";
-import {
-  useQuery,
-  keepPreviousData,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
-import Modal from "@/components/Modal/Modal";
 import SearchBox from "@/components/SearchBox/SearchBox";
-import NoteForm from "@/components/NoteForm/NoteForm";
 import { type CategoryNoAll } from "@/types/note";
-import Link from "next/link";
 
 type NotesClientProps = {
   tag?: CategoryNoAll;
 };
+
 const PER_PAGE = 8;
 
 export default function NotesClient({ tag }: NotesClientProps) {
@@ -41,7 +36,7 @@ export default function NotesClient({ tag }: NotesClientProps) {
     ],
     queryFn: () => fetchNotes(currentPage, PER_PAGE, search || undefined, tag),
     placeholderData: keepPreviousData,
-    refetchOnMount: false,
+    refetchOnMount: "always",
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     staleTime: 30_000,
@@ -55,7 +50,6 @@ export default function NotesClient({ tag }: NotesClientProps) {
     <div className={css.app}>
       <header className={css.toolbar}>
         <SearchBox onSearch={setSearchInput} />
-
         <Link
           href="/notes/action/create"
           className={css.button}

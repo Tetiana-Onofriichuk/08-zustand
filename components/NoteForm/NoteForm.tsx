@@ -48,14 +48,16 @@ export default function NoteForm({ initialValues, onCancel }: NoteFormProps) {
     [isCreate, draft, local]
   );
 
-  const handleCancel = onCancel ?? (() => router.push("/notes"));
+  const handleCancel =
+    onCancel ??
+    (() => {
+      if (isCreate) router.back();
+      else router.push("/notes");
+    });
 
   const update = (patch: Partial<NoteFormValues>) => {
-    if (isCreate) {
-      setDraft({ ...draft, ...patch });
-    } else {
-      setLocal((prev) => ({ ...prev, ...patch }));
-    }
+    if (isCreate) setDraft({ ...draft, ...patch });
+    else setLocal((prev) => ({ ...prev, ...patch }));
   };
 
   const queryClient = useQueryClient();
@@ -82,7 +84,8 @@ export default function NoteForm({ initialValues, onCancel }: NoteFormProps) {
       {
         onSuccess: () => {
           clearDraft();
-          handleCancel();
+
+          router.back();
         },
       }
     );
